@@ -152,7 +152,7 @@ function gotowebinar_civicrm_postProcess($class, &$form) {
   $custom_group_ret = civicrm_api('CustomGroup', 'GET', $customGroupParams);
   if ($custom_group_ret['is_error'] || $custom_group_ret['count'] == 0) {
       throw new CRM_Finance_BAO_Import_ValidateException(
-              "Can't find custom group for Financial_Import_Reference",
+              "Can't find custom group for Webinar_Event",
               $excCode,
               $value);
   }
@@ -176,10 +176,10 @@ function gotowebinar_civicrm_postProcess($class, &$form) {
   $webinar_key    = CRM_Core_DAO::singleValueQuery($query);
   
   if(!empty($webinar_key)) {
-    $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::MC_SETTING_GROUP,
+    $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
         'access_token', NULL, FALSE
       );
-    $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::MC_SETTING_GROUP,
+    $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
         'organizer_key', NULL, FALSE
       );
     $url = "https://api.citrixonline.com/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
@@ -202,30 +202,30 @@ function gotowebinar_civicrm_postProcess($class, &$form) {
       INNER JOIN civicrm_participant cp ON cp.contact_id = cc.id
       WHERE cp.id IN ($pidString)";
       
-      $fields = array();
-      $fieldsDao = CRM_Core_DAO::executeQuery($ParticipantQuery);
-      while($fieldsDao->fetch()) {
-        $fields = array(
-          'firstName' => $fieldsDao->first_name,
-          'lastName'  => $fieldsDao->last_name,
-          'email'     => $fieldsDao->email,
-        );
-        
-        curl_setopt ($session, CURLOPT_POSTFIELDS, json_encode($fields));
-        $output = curl_exec($session);
-        $header = curl_getinfo( $session );
-        $response = json_decode($output, TRUE);
-      }
+    $fields = array();
+    $fieldsDao = CRM_Core_DAO::executeQuery($ParticipantQuery);
+    while($fieldsDao->fetch()) {
+      $fields = array(
+        'firstName' => $fieldsDao->first_name,
+        'lastName'  => $fieldsDao->last_name,
+        'email'     => $fieldsDao->email,
+      );
+
+      curl_setopt ($session, CURLOPT_POSTFIELDS, json_encode($fields));
+      $output = curl_exec($session);
+      $header = curl_getinfo( $session );
+      $response = json_decode($output, TRUE);
+    }
   }
 }
 
 function gotowebinar_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Event_Form_ManageEvent_EventInfo' AND ($form->getAction() == CRM_Core_Action::ADD OR $form->getAction() == CRM_Core_Action::UPDATE)) {
        
-     $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::MC_SETTING_GROUP,
+     $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
     );
-      $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::MC_SETTING_GROUP,
+      $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'organizer_key', NULL, FALSE
     );
       

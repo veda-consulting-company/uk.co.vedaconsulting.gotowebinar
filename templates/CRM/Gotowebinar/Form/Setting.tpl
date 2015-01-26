@@ -14,10 +14,26 @@
 	          </span>
           </td>
         </tr>
+        {if $initial}
+        <tr class="crm-webinar-setting-api-key-email">
+          <td class="label">{$form.email_address.label}</td>
+          <td>{$form.email_address.html}<br/>
+      	    <span class="description">{ts}Username to connect Webinar account{/ts}
+	          </span>
+          </td>
+        </tr>
+        <tr class="crm-webinar-setting-api-key-password">
+          <td class="label">{$form.password.label}</td>
+          <td>{$form.password.html}<br/>
+      	    <span class="description">{ts}Password to connect Webinar account{/ts}
+	          </span>
+          </td>
+        </tr>
+        {/if}
         {if $responseKey}
             <tr class="crm-webinar-information-api-key-block">
                 <td class="label" style="color:green"><b>{ts} Info:{/ts}</td>
-                <td class="label" style="color:green"><b>{ts}Your account is connected.<br/>Here are your Upcoming Webinars {/ts}</td>
+                <td class="label" style="color:green"><b>{ts}Your account is connected.&nbsp;Here are your Upcoming Webinars {/ts}</td>
             </tr>
             <tr style="background-color: #CDE8FE;">
                       <td><b>{ts}Description{/ts}</td>
@@ -37,10 +53,16 @@
                 </tr>
             {/foreach}
         {/if}
+        {if $clienterror}
+            <tr class="crm-webinar-information-erro-api-key-block">
+            <td class="label" style="color:red"><b>{ts} Info:{/ts}</td>
+            <td class="label" style="color:red">{ts}{$clienterror.int_err_code}{/ts}&nbsp;&nbsp;&nbsp;&nbsp;{ts}{$clienterror.msg}{/ts}</td>
+            </tr>
+        {/if}
         {if $error}
             <tr class="crm-webinar-information-erro-api-key-block">
             <td class="label" style="color:red"><b>{ts} Info:{/ts}</td>
-            <td class="label" style="color:red"><b>{ts}There appears to be a problem.<br/>{/ts}{$error}</td>
+            <td class="label" style="color:red">{ts}{$error.int_err_code}{/ts}&nbsp;&nbsp;&nbsp;&nbsp;{ts}{$error.msg}{/ts}</td>
             </tr>
         {/if}
       </table>
