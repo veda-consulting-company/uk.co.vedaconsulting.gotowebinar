@@ -12,10 +12,14 @@
   <version>1.0</version>
   <develStage>alpha</develStage>
   <compatibility>
-    <ver>4.2</ver>
+    <ver>4.4</ver>
+    <ver>4.5</ver>
   </compatibility>
   <comments>This is a new, undeveloped module</comments>
   <civix>
     <namespace>CRM/Gotowebinar</namespace>
   </civix>
+   <urls>
+    <url desc="Documentation">https://github.com/veda-consulting/uk.co.vedaconsulting.gotowebinar/blob/master/README.md</url>
+  </urls>
 </extension>
