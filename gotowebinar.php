@@ -117,7 +117,7 @@ function gotowebinar_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 
 
 function gotowebinar_civicrm_navigationMenu(&$params){
-  $parentId             = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Navigation', 'Mailings', 'id', 'name');
+  $parentId             = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Navigation', 'Events', 'id', 'name');
   $maxId                = max(array_keys($params));
   $gotoWebinarMaxId     = $maxId+1;
 

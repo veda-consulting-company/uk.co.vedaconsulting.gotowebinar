@@ -1,4 +1,4 @@
-# GoToWebinar Integration for CiviCRM #
+# GoToWebinar Integration for CiviCRM Events #
 
 ### Overview ###
 
@@ -7,7 +7,7 @@ CiviCRM Events can be integrated with GoToWebinar
 ### Installation ###
 
 * Install the extension manually in CiviCRM. More details [here](http://wiki.civicrm.org/confluence/display/CRMDOC/Extensions#Extensions-Installinganewextension) about installing extensions in CiviCRM.
-* Configure GoToWebinar details in Mailings >> GoToWebinar Settings(civicrm/gotowebinar/settings?reset=1)
+* Configure GoToWebinar details in Events >> GoToWebinar Settings(civicrm/gotowebinar/settings?reset=1)
 ![Screenshot of integration options](images/webinar-setting-page.jpg)
 
 ![Screenshot of integration options](images/setting-page-after-auth.jpg)
