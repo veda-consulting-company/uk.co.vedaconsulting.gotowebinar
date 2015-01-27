@@ -135,86 +135,81 @@ function gotowebinar_civicrm_navigationMenu(&$params){
   );
 }
 
-function gotowebinar_civicrm_postProcess($class, &$form) {
+function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
+  if($op == 'create' && $objectName == 'Participant') {
+    $eventID  = $objectRef->event_id;
+    $pid      = $objectId;
   
-  if (!in_array($class, array(
-    'CRM_Event_Form_Registration_Confirm',
-  ))) {
-    return;
-  }
-  
-  $custom_group_name = 'Webinar_Event';
-  $customGroupParams = array(
-      'version'     => 3,
-      'sequential'  => 1,
-      'name'        => $custom_group_name,
-  );
-  $custom_group_ret = civicrm_api('CustomGroup', 'GET', $customGroupParams);
-  if ($custom_group_ret['is_error'] || $custom_group_ret['count'] == 0) {
-      throw new CRM_Finance_BAO_Import_ValidateException(
-              "Can't find custom group for Webinar_Event",
-              $excCode,
-              $value);
-  }
-  $customGroupID = $custom_group_ret['id'];
-  $customGroupTableName = $custom_group_ret['values'][0]['table_name'];
+    $custom_group_name = 'Webinar_Event';
+    $customGroupParams = array(
+        'version'     => 3,
+        'sequential'  => 1,
+        'name'        => $custom_group_name,
+    );
+    $custom_group_ret = civicrm_api('CustomGroup', 'GET', $customGroupParams);
+    if ($custom_group_ret['is_error'] || $custom_group_ret['count'] == 0) {
+        throw new CRM_Finance_BAO_Import_ValidateException(
+                "Can't find custom group for Webinar_Event",
+                $excCode,
+                $value);
+    }
+    $customGroupID = $custom_group_ret['id'];
+    $customGroupTableName = $custom_group_ret['values'][0]['table_name'];
 
-  // Now try and find a record with the reference passed
-  $customGroupParams = array(
-      'version' => 3,
-      'sequential' => 1,
-      'custom_group_id' => $customGroupID,
-  );
-  $custom_field_ret = civicrm_api ('CustomField','GET',$customGroupParams);
-  foreach($custom_field_ret['values'] as $k => $field){
-    $field_attributes[$field['name']] = $field;
-  }
-   
-  $webinarColumn  = $field_attributes['Webinar_id']['column_name'];
-  $eventID        = $form->getVar('_eventId');
-  $query          = "SELECT $webinarColumn AS webinar_id FROM $customGroupTableName WHERE entity_id = {$eventID}";
-  $webinar_key    = CRM_Core_DAO::singleValueQuery($query);
-  
-  if(!empty($webinar_key)) {
-    $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-        'access_token', NULL, FALSE
-      );
-    $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-        'organizer_key', NULL, FALSE
-      );
-    $url = "https://api.citrixonline.com/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
-    $options = array(
-                    CURLOPT_RETURNTRANSFER => TRUE, // return web page
-                    CURLOPT_SSL_VERIFYHOST => FALSE,
-                    CURLOPT_SSL_VERIFYPEER => FALSE,
-                    CURLOPT_HTTPHEADER     => array("Authorization: OAuth oauth_token=".$accessToken, "Content-type:application/json"),
-                    CURLOPT_HEADER         => FALSE,
-                  );
-    $session = curl_init( $url );
-    curl_setopt_array( $session, $options );
-  
-    $pids = $form->getVar('_participantIDS');
-    $pidString = implode(',', $pids);
-    
-    $ParticipantQuery = "
-      SELECT cc.`first_name`, cc.`last_name`, ce.email FROM `civicrm_contact` cc
-      INNER JOIN civicrm_email ce ON (ce.contact_id = cc.id AND ce.is_primary = 1)
-      INNER JOIN civicrm_participant cp ON cp.contact_id = cc.id
-      WHERE cp.id IN ($pidString)";
+    // Now try and find a record with the reference passed
+    $customGroupParams = array(
+        'version' => 3,
+        'sequential' => 1,
+        'custom_group_id' => $customGroupID,
+    );
+    $custom_field_ret = civicrm_api ('CustomField','GET',$customGroupParams);
+    foreach($custom_field_ret['values'] as $k => $field){
+      $field_attributes[$field['name']] = $field;
+    }
+
+    $webinarColumn  = $field_attributes['Webinar_id']['column_name'];
+    $query          = "SELECT $webinarColumn AS webinar_id FROM $customGroupTableName WHERE entity_id = {$eventID}";
+    $webinar_key    = CRM_Core_DAO::singleValueQuery($query);
+
+    if(!empty($webinar_key)) {
+      $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
+          'access_token', NULL, FALSE
+        );
+      $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
+          'organizer_key', NULL, FALSE
+        );
+      $url = "https://api.citrixonline.com/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
+      $options = array(
+                      CURLOPT_RETURNTRANSFER => TRUE, // return web page
+                      CURLOPT_SSL_VERIFYHOST => FALSE,
+                      CURLOPT_SSL_VERIFYPEER => FALSE,
+                      CURLOPT_HTTPHEADER     => array("Authorization: OAuth oauth_token=".$accessToken, "Content-type:application/json"),
+                      CURLOPT_HEADER         => FALSE,
+                    );
+      $session = curl_init( $url );
+      curl_setopt_array( $session, $options );
+
+      $ParticipantQuery = "
+        SELECT cc.`first_name`, cc.`last_name`, ce.email FROM `civicrm_contact` cc
+        INNER JOIN civicrm_email ce ON (ce.contact_id = cc.id AND ce.is_primary = 1)
+        INNER JOIN civicrm_participant cp ON cp.contact_id = cc.id
+        WHERE cp.id = %1 AND cp.status_id = %2";
+      $ParticipantQueryParams = array(1 => array($pid, 'Int'), 2 => array(1,'Int'));
       
-    $fields = array();
-    $fieldsDao = CRM_Core_DAO::executeQuery($ParticipantQuery);
-    while($fieldsDao->fetch()) {
-      $fields = array(
-        'firstName' => $fieldsDao->first_name,
-        'lastName'  => $fieldsDao->last_name,
-        'email'     => $fieldsDao->email,
-      );
+      $fields = array();
+      $fieldsDao = CRM_Core_DAO::executeQuery($ParticipantQuery, $ParticipantQueryParams);
+      while($fieldsDao->fetch()) {
+        $fields = array(
+          'firstName' => $fieldsDao->first_name,
+          'lastName'  => $fieldsDao->last_name,
+          'email'     => $fieldsDao->email,
+        );
 
-      curl_setopt ($session, CURLOPT_POSTFIELDS, json_encode($fields));
-      $output = curl_exec($session);
-      $header = curl_getinfo( $session );
-      $response = json_decode($output, TRUE);
+        curl_setopt ($session, CURLOPT_POSTFIELDS, json_encode($fields));
+        $output = curl_exec($session);
+        $header = curl_getinfo( $session );
+        $response = json_decode($output, TRUE);
+      }
     }
   }
 }
