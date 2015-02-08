@@ -1,4 +1,6 @@
-<table id="webinar_settings" style="display:none;">
+{if $smarty.get.action eq 'add'}
+{else}
+<table id="webinar_settings">
     <tr style="background-color: #CDE8FE;">
                <td><b>{ts}Description{/ts}</td>
                <td><b>{ts}Subject{/ts}</td>
@@ -19,18 +21,21 @@
     {/foreach}
         
 </table>
-    
-{literal}
-<script>
+ 
+{literal} 
+<script> 
+
+
     cj( document ).ready(function() {
         var custom = "{/literal}{$customDataSubType}{literal}";
         if(custom) {
             var webinar_settings = cj('#webinar_settings').html();
-            webinar_settings = webinar_settings.replace("<tbody>", "");
-            webinar_settings = webinar_settings.replace("</tbody>", "");
-            cj("input[data-crm-custom='Webinar_Event:Webinar_id']").parent().parent().after(webinar_settings);
+             webinar_settings = webinar_settings.replace("<tbody>", "");
+            webinar_settings = webinar_settings.replace("</tbody>", ""); 
+           cj("input[data-crm-custom='Webinar_Event:Webinar_id']").parent().parent().after(webinar_settings);
         }
     });
 </script>
-{/literal}
-    
+{/literal} 
+{/if}
+
