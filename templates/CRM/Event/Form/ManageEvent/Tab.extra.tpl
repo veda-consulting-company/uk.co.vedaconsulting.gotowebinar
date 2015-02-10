@@ -1,3 +1,3 @@
 
-{if $smarty.get.cgcount eq '1'}
+{if $smarty.get.cgcount gt '0'}
 {/if}

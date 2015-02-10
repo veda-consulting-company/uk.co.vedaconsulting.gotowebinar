@@ -1,4 +1,4 @@
-{if $smarty.get.cgcount eq '1'}
+{if $smarty.get.cgcount gt '0'}
 
   <table id="webinar_settings" cellspacing="0" width="100%" >
   
@@ -31,14 +31,14 @@
   
     cj(document).ready(function() {
 	  cj().crmAPI ('CustomField','get',{'sequential' :'1', 'name' :'Webinar_id'},
-	    {success:function (data){    
-		  cj.each(data, function(key, value){
-		  window.CusfieldId = data.id;});
-		}
-        });
+	  {success:function (data){    
+		cj.each(data, function(key, value){
+		window.CusfieldId = data.id;});
+	  }
+      });
 		
       var custom = "{/literal}{$customDataSubType}{literal}";
-        if(custom) {
+        if(custom){
           var webinar_settings = cj('#webinar_settings').html();
           webinar_settings = webinar_settings.replace("<tbody>", "");
           webinar_settings = webinar_settings.replace("</tbody>", ""); 
@@ -46,7 +46,7 @@
         }
 		
         cj(".webminarKey").click(function(){            
-          var fieldname =	'#custom_'+CusfieldId+'_-1';				
+          var fieldname ='#custom_'+CusfieldId+'_-1';				
           cj(fieldname).val(cj(this).html());
         });
         cj('#webinar_settings').dataTable();
