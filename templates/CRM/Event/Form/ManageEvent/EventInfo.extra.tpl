@@ -1,5 +1,5 @@
 {if $smarty.get.cgcount gt '0'}
-
+ <h2>Click any key below to populate Webinar Key field.</h2><br />
   <table id="webinar_settings" cellspacing="0" width="100%" >
   
     <thead>
@@ -18,7 +18,7 @@
         <tr>
           <td sortable="true">{$webinar.description}</td>
           <td class='subject' sortable="true">{$webinar.subject}</td>
-          <td class='webminarKey' sortable="true">{$webinar.webinarKey}</td>
+          <td class='webminarKey' sortable="true" style="cursor: pointer;" title="Click the key to populate Webinar Key field.">{$webinar.webinarKey}</td>
           <td sortable="true">{$times[0].startTime|crmDate}</td>
           <td sortable="true">{$times[0].endTime|crmDate}</td>
         </tr>
@@ -30,6 +30,9 @@
   <script> 
   
     cj(document).ready(function() {
+	
+cj(document).tooltip();		
+	
 	  cj().crmAPI ('CustomField','get',{'sequential' :'1', 'name' :'Webinar_id'},
 	  {success:function (data){    
 		cj.each(data, function(key, value){
