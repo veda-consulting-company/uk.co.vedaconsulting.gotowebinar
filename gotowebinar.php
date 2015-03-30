@@ -136,7 +136,7 @@ function gotowebinar_civicrm_navigationMenu(&$params){
 }
 
 function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
-  if($op == 'create' && $objectName == 'Participant') {
+  if (($op == 'create' || $op == 'edit') && $objectName == 'Participant') {
     $eventID  = $objectRef->event_id;
     $pid      = $objectId;
   
