@@ -140,12 +140,13 @@ function gotowebinar_civicrm_post($op, $objectName, $objectId, &$objectRef) {
     $eventID = $objectRef->event_id;
     $pid = $objectId;
     $ParticipantQuery = "
-      SELECT cc.`first_name`, cc.`last_name`, ce.`email`, cp.`status_id`  FROM `civicrm_contact` cc
-      INNER JOIN civicrm_email ce ON (ce.contact_id = cc.id AND ce.is_primary = 1)
-      INNER JOIN civicrm_participant cp ON cp.contact_id = cc.id
-      WHERE cp.id = %1";
+        SELECT cc.`first_name`, cc.`last_name`, ce.email FROM `civicrm_contact` cc
+        INNER JOIN civicrm_email ce ON (ce.contact_id = cc.id AND ce.is_primary = 1)
+        INNER JOIN civicrm_participant cp ON cp.contact_id = cc.id
+        LEFT JOIN civicrm_value_webinar_participant_7 cw ON cp.id = cw.entity_id
+        WHERE cp.id = %1 AND cp.status_id = %2 AND cw.registrant_key_15 is null";
 
-    $ParticipantQueryParams = array(1 => array($pid, 'Int'));
+    $ParticipantQueryParams = array(1 => array($pid, 'Int'), 2 => array(1,'Int'));
  
     $fields = array();
     $fieldsDao = CRM_Core_DAO::executeQuery($ParticipantQuery, $ParticipantQueryParams);
@@ -156,16 +157,7 @@ function gotowebinar_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         'lastName' => $fieldsDao->last_name,
         'email' => $fieldsDao->email,
       );
-      $sid = $fieldsDao->status_id;
     }
-    $participantCustomQuery = "SELECT `registrant_key_15` FROM `civicrm_value_webinar_participant_7` WHERE `entity_id`= $pid";
-    $daoCustomParticipant = CRM_Core_DAO::executeQuery($participantCustomQuery);
-    $webinarRegisterKey = '';
-
-    while ($daoCustomParticipant->fetch()) {
-      $webinarRegisterKey = $daoCustomParticipant->registrant_key_15;
-    }
-    if ($sid == 1 && empty($webinarRegisterKey)) {
 
     $custom_group_name = 'Webinar_Event';
     $customGroupParams = array(
@@ -217,7 +209,8 @@ function gotowebinar_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       $output = curl_exec($session);
       $header = curl_getinfo($session);
       $response = json_decode($output, TRUE);
-
+       
+      //stored data into custom table
       $id = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', 'Registrant_Key', 'id', 'name');
       $params = array(
         'version' => 3,
@@ -225,7 +218,6 @@ function gotowebinar_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         "custom_{$id}" => $response['registrantKey'],
       );
       $finalResult = civicrm_api3('CustomValue', 'create', $params);
-    }
   }
 }
 
