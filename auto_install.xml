@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 
-<CustomData>
+  <CustomData>
   <CustomGroups>
     <CustomGroup>
       <name>Webinar_Event</name>
@@ -13,6 +13,22 @@
       <weight>2</weight>
       <is_active>1</is_active>
       <table_name>civicrm_value_webinar_event</table_name>
+      <is_multiple>0</is_multiple>
+      <collapse_adv_display>0</collapse_adv_display>
+      <created_date>0000-00-00 00:00:00</created_date>
+      <is_reserved>0</is_reserved>
+    </CustomGroup>   
+    <CustomGroup>
+      <name>Webinar_Participant</name>
+      <title>Webinar Participant</title>
+      <extends>Participant</extends>
+      <style>Inline</style>
+      <collapse_display>0</collapse_display>
+      <help_pre></help_pre>
+      <help_post></help_post>
+      <weight>3</weight>
+      <is_active>1</is_active>
+      <table_name>civicrm_value_webinar_participant</table_name>
       <is_multiple>0</is_multiple>
       <collapse_adv_display>0</collapse_adv_display>
       <created_date>0000-00-00 00:00:00</created_date>
@@ -37,5 +53,23 @@
       <column_name>webinar_id</column_name>
       <custom_group_name>Webinar_Event</custom_group_name>
     </CustomField>
+    <CustomField>
+      <name>Registrant_Key</name>
+      <label>Registrant Key</label>
+      <data_type>String</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>0</is_searchable>
+      <is_search_range>0</is_search_range>
+      <weight>2</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>150</note_columns>
+      <note_rows>4</note_rows>
+      <column_name>registrant_key</column_name>
+      <custom_group_name>Webinar_Participant</custom_group_name>
+    </CustomField>
   </CustomFields>
 </CustomData>
+
