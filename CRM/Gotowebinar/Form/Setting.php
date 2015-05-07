@@ -27,7 +27,12 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     
     $this->addElement('text', 'api_key', ts('API Key'), array(
       'size' => 48,
-    ));    
+    ));  
+    
+    $status = CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label');
+    foreach ($status as $id => $Name) {
+      $this->addElement('checkbox', "participant_status_id[$id]", NULL, $Name);
+    }
     
     $accessToken = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
@@ -43,6 +48,13 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
       } else {
         $this->assign('responseKey', TRUE);
         $this->assign('upcomingWebinars', $upcomingWebinars );
+        $buttons = array(
+        array(
+          'type' => 'submit',
+          'name' => ts('Save Status'),
+          ),
+        );
+        $this->addButtons($buttons);
       }
       
     }
@@ -64,9 +76,14 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
   public function setDefaultValues() {
     $defaults = $details = array();
-
+    $status  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'participant_status');
     if(WEBINAR_KEY) {
       $defaults['api_key'] = WEBINAR_KEY;
+    }
+    if ($status) {
+      foreach ($status as $key => $id) {
+        $defaults['participant_status_id['.$id.']'] = 1;
+      }
     }
     return $defaults;
   }
@@ -80,11 +97,17 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
    */
   public function postProcess() {
     // Store the submitted values in an array.
-    $params = $this->controller->exportValues($this->_name);    
+    $params = $this->controller->exportValues($this->_name); 
+    // If gotowebinar was already connected, we introduced button called 'save status'
+    CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
+        self::WEBINAR_SETTING_GROUP, 'participant_status'
+      );
       
     // Save the API Key & Save the Security Key
     if (CRM_Utils_Array::value('api_key', $params) && CRM_Utils_Array::value('email_address', $params) && CRM_Utils_Array::value('password', $params)) {
-      
+      CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
+        self::WEBINAR_SETTING_GROUP, 'participant_status'
+      );
       $apiKey         = urlencode($params['api_key']);
       $username       = urlencode($params['email_address']);
       $password       = urlencode($params['password']);
