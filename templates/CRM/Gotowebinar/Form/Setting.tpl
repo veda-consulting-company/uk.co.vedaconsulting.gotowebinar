@@ -14,6 +14,18 @@
 	          </span>
           </td>
         </tr>
+         <tr>
+            <td ><label>{ts}Participant Status To Be Considered {/ts}</label>
+                <br />
+                <div class="listing-box" style="height: 120px">
+                    {foreach from=$form.participant_status_id item="participant_status_val"}
+                        <div class="{cycle values="odd-row,even-row"}">
+                            {$participant_status_val.html}
+                        </div>
+                    {/foreach}
+                </div>
+            </td>
+        </tr>
         {if $initial}
         <tr class="crm-webinar-setting-api-key-email">
           <td class="label">{$form.email_address.label}</td>
