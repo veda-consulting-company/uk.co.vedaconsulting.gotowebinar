@@ -33,7 +33,9 @@
 <script> 
 cj(document).ready(function() {
   var webinar_settings = cj('#webinarTableWarpper').html();
-  cj("input[data-crm-custom='Webinar_Event:Webinar_id']").parent().parent().parent().parent().after(webinar_settings);
+  if (cj('#webinarTableWarpper').length == 0) {
+    cj("input[data-crm-custom='Webinar_Event:Webinar_id']").parent().parent().parent().parent().after(webinar_settings);
+  };
 		  
   cj(document).tooltip();
      
@@ -48,15 +50,15 @@ cj(document).ready(function() {
   });
   
   cj('#webinar_settings tbody').on('click', 'tr', function (){            
-    var fieldname ='#custom_'+window.custid+'_-1';    
+    var fieldname ='#custom_'+window.custid+'_1';    
     var name = cj('td', this).eq(2).text();
     cj(fieldname).val(name);
   });
   
   cj('#webinar_settings').dataTable(); 
-  if(cj(window.ids).length==0){
-    cj('#webinarTableWarpper').hide(); 
-  }
+  // if(cj(window.ids).length==0){
+  //   cj('#webinarTableWarpper').hide(); 
+  // }
 });		    
 </script>
 {/literal}
