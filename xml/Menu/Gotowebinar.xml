@@ -5,6 +5,6 @@
     <path>civicrm/gotowebinar/settings</path>
     <page_callback>CRM_Gotowebinar_Form_Setting</page_callback>
     <title>Gotowebinar Settings</title>
-    <access_arguments>administer CiviCRM</access_arguments>
+    <access_arguments>access CiviEvent</access_arguments>
   </item>
 </menu>
