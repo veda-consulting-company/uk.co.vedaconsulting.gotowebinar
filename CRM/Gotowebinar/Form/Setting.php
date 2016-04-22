@@ -159,8 +159,9 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
    
     $output = curl_exec($session);
     $header = curl_getinfo( $session );
-        
-    return json_decode($output, TRUE);
+    $response = json_decode($output, TRUE);
+    CRM_Core_Error::debug_var('Connection response', $response);
+    return $response;
   } // END function request
   
   static function findUpcomingWebinars() {
@@ -185,7 +186,7 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     curl_setopt_array( $session, $options );
     $output   = curl_exec($session);
     $header   = curl_getinfo( $session );
-    $response = json_decode($output, TRUE, 1024, JSON_BIGINT_AS_STRING);
+    $response = json_decode(preg_replace('/("\w+"):(-?\d+(.\d+)?)/', '\1:"\2"', $output), true);
     return  $response;
   }
 }
