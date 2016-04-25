@@ -38,21 +38,10 @@ cj(document).ready(function() {
   };
 		  
   cj(document).tooltip();
-     
-  cj().crmAPI('CustomField','get',{'sequential' :'1', 'name' :'Webinar_id'},
-  {
-    success:function (data) {    
-      cj.each(data, function(key, value) {
-        window.custid = data.id;
-        window.ids=data.id;
-      });
-    }
-  });
   
   cj('#webinar_settings tbody').on('click', 'tr', function (){            
-    var fieldname ='#custom_'+window.custid+'_1';    
     var name = cj('td', this).eq(2).text();
-    cj(fieldname).val(name);
+    cj("input[data-crm-custom='Webinar_Event:Webinar_id']").val(name);
   });
   
   cj('#webinar_settings').dataTable(); 
