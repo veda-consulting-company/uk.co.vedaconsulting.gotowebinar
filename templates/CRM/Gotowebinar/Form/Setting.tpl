@@ -1,7 +1,7 @@
 <div class="crm-block crm-form-block crm-webinar-setting-form-block">
   <div class="crm-accordion-wrapper crm-accordion_webinar_setting-accordion crm-accordion-open">
     <div class="crm-accordion-header">
-      <div class="icon crm-accordion-pointer"></div> 
+      <div class="icon crm-accordion-pointer"></div>
       {ts}API Key Setting{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
@@ -57,7 +57,10 @@
             {foreach from=$upcomingWebinars item=webinar}
                 <tr>
                 <td>{$webinar.description}</td>
-                <td>{$webinar.subject}</td>
+                <td>
+                  {$webinar.subject}
+                  <p style="color: red;">{$webinar.warning}</p>
+                </td>
                 <td>{$webinar.webinarKey}</td>
                 {assign var=times value=$webinar.times}
                 <td>{$times[0].startTime|crmDate}</td>
@@ -84,4 +87,4 @@
     </div>
   </div>
 </div>
-    
+
