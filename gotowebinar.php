@@ -1,6 +1,7 @@
 <?php
 
 require_once 'gotowebinar.civix.php';
+define('WEBINAR_API_URL', 'https://api.getgo.com');
 define('WEBINAR_KEY', 'gL39JZHP8Uz1yMu3ii8vDAoKu8CDehZM');
 
 /**
@@ -29,7 +30,7 @@ function gotowebinar_civicrm_xmlMenu(&$files) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function gotowebinar_civicrm_install() {
-  
+
   #create custom group from xml file
   $extensionDir       = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
   $customDataXMLFile  = $extensionDir  . 'auto_install.xml';
@@ -139,7 +140,7 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
   if (($op == 'create' || $op == 'edit') && $objectName == 'Participant') {
     $eventID  = $objectRef->event_id;
     $pid      = $objectId;
-    
+
     $participantQuery = "
       SELECT cc.`first_name`, cc.`last_name`, ce.email FROM `civicrm_contact` cc
       INNER JOIN civicrm_email ce ON (ce.contact_id = cc.id AND ce.is_primary = 1)
@@ -156,7 +157,7 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
     $sql = $participantQuery.$where;
     $fields = array();
     $fieldsDao = CRM_Core_DAO::executeQuery($sql, $participantQueryParams);
-    
+
     while($fieldsDao->fetch()) {
       $fields = array(
       'firstName' => $fieldsDao->first_name,
@@ -202,7 +203,7 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
       $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
           'organizer_key', NULL, FALSE
         );
-      $url = "https://api.citrixonline.com/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
+      $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
       $options = array(
                       CURLOPT_RETURNTRANSFER => TRUE, // return web page
                       CURLOPT_SSL_VERIFYHOST => FALSE,
@@ -217,7 +218,14 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
         $output = curl_exec($session);
         $header = curl_getinfo( $session );
         $response = json_decode($output, TRUE);
-        
+
+      // display if any errors and return
+      if ( isset($response['errorCode']) && !empty($response['errorCode']) ) {
+        $errorCode = 'Webinar Error : '.$response['errorCode'];
+        CRM_Core_Session::setStatus(ts($response['description']), ts($errorCode), 'error');
+        return;
+      }
+
       //stored data into custom table
       $id = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', 'Registrant_Key', 'id', 'name');
       $params = array(
@@ -231,14 +239,14 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
 
 function gotowebinar_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Event_Form_ManageEvent_EventInfo' AND ($form->getAction() == CRM_Core_Action::ADD OR $form->getAction() == CRM_Core_Action::UPDATE)) {
-       
+
      $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
     );
       $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'organizer_key', NULL, FALSE
     );
-      
+
     if($accessToken && $organizerKey) {
       $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
       $form->assign('upcomingWebinars', $upcomingWebinars );
