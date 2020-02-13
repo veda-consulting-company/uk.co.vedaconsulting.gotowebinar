@@ -3,10 +3,12 @@
     <div class="crm-accordion-header">
       <div class="icon crm-accordion-pointer"></div>
       {ts}API Key Setting{/ts}
+      {ts}Client Secret Setting{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
 
       <table class="form-layout-compressed">
+        {if $initial}
     	  <tr class="crm-webinar-setting-api-key-block">
           <td class="label">{$form.api_key.label}</td>
           <td>{$form.api_key.html}<br/>
@@ -14,6 +16,16 @@
 	          </span>
           </td>
         </tr>
+        {/if}
+        {if $initial}
+        <tr class="crm-webinar-setting-client-secret-block">
+          <td class="label">{$form.client_secret.label}</td>
+          <td>{$form.client_secret.html}<br/>
+            <span class="description">{ts}Client Secret from Webinar{/ts}
+            </span>
+          </td>
+        </tr>
+        {/if}
          <tr>
             <td ><label>{ts}Participant Status To Be Considered {/ts}</label>
                 <br />
