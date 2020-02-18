@@ -25,13 +25,6 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
    */
   public function buildQuickForm() {
 
-    $this->addElement('text', 'api_key', ts('API Key'), array(
-      'size' => 48,
-    ));
-    $this->addElement('text', 'client_secret', ts('Client Secret'), array(
-      'size' => 48,
-    ));
-
     $status = CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label');
     foreach ($status as $id => $Name) {
       $this->addElement('checkbox', "participant_status_id[$id]", NULL, $Name);
@@ -48,14 +41,15 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     if($accessToken && $organizerKey) {
       $validToken = TRUE;
       $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
+      //If Invalid token then refresh the accessToken and obtain the upcomingWebinars
+      if(isset($upcomingWebinars['int_err_code']) && $upcomingWebinars['int_err_code'] == 'InvalidToken'){
+        $validToken = CRM_Gotowebinar_Utils::refreshAccessToken();
+        if($validToken){
+          $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
+        }
+      }
       if(isset($upcomingWebinars['int_err_code']) and $upcomingWebinars['int_err_code'] != '') {
         $this->assign('error', $upcomingWebinars);
-        // FIX ME : currently not refreshing tokens automatically - if the the above response returns 'InvalidToken' error, setting validToken flag as FALSE and displaying authentication fields again.
-        if ($upcomingWebinars['int_err_code'] == 'InvalidToken') {
-          $validToken = FALSE;
-          // display the error
-          CRM_Core_Session::setStatus(ts('Tokens stored are not valid/expired. Refresh the tokens using your login details'), ts('Invalid/Expired Token'), 'error');
-        }
       } else {
         // GK 12102017 - Check each webinar's fields and display warning, if any of the webinars required additonal required fields
         foreach ($upcomingWebinars as $key => $webinar) {
@@ -86,8 +80,14 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
     // If valid token not found, displaying the authentication fields
     if (!$validToken) {
+      $this->add('password', 'api_key', ts('API Key'), array(
+        'size' => 48,
+      ), TRUE);
+      $this->add('password', 'client_secret', ts('Client Secret'), array(
+        'size' => 48,
+      ), TRUE);
       $this->add('text', "email_address", ts('Email Address'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'), TRUE);
-      $this->add('text', "password", ts('Password'), array('size' => 48,), TRUE);
+      $this->add('password', 'password', ts('Password'), ['autocomplete' => 'off'], TRUE);
       $buttons = array(
         array(
           'type' => 'submit',
@@ -132,9 +132,11 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     // Store the submitted values in an array.
     $params = $this->controller->exportValues($this->_name);
     // If gotowebinar was already connected, we introduced button called 'save status'
-    CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
-        self::WEBINAR_SETTING_GROUP, 'participant_status'
-      );
+    if(isset($params['participant_status_id'])){
+      CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
+          self::WEBINAR_SETTING_GROUP, 'participant_status'
+        );
+    }
 
     // Save the API Key & Save the Security Key
     if (CRM_Utils_Array::value('api_key', $params) && CRM_Utils_Array::value('client_secret', $params)
@@ -178,14 +180,7 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
       }
       else {
         if($clientInfo['access_token'] && $clientInfo['organizer_key']) {
-          CRM_Core_BAO_Setting::setItem($clientInfo['access_token'],
-            self::WEBINAR_SETTING_GROUP,
-            'access_token'
-          );
-          CRM_Core_BAO_Setting::setItem($clientInfo['organizer_key'],
-              self::WEBINAR_SETTING_GROUP,
-              'organizer_key'
-          );
+          CRM_Gotowebinar_Utils::storeAccessToken($clientInfo);
           $session = CRM_Core_Session::singleton();
           $session->set("autherror", NULL);
           CRM_Utils_System::redirect($redirectUrl);

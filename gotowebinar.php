@@ -197,32 +197,13 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
     $webinar_key    = CRM_Core_DAO::singleValueQuery($query);
 
     if(!empty($webinar_key)) {//DM: changed according to the new api amendments
-      $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-          'access_token');
-      $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-          'organizer_key');
-      $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
-      $headers = array();
-      $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
-      $headers[] = "Content-type:application/json";
-
-      $result = CRM_Gotowebinar_Utils::apiCall($url, $headers, json_encode($fields));
-      $response = json_decode($result, TRUE);
+      $response = CRM_Gotowebinar_Utils::registerParticipant($webinar_key, $fields);
 
       // display if any errors and return
       if ((isset($response['int_err_code'])) && ($response['int_err_code'] == 'InvalidToken')) {
         $validToken = CRM_Gotowebinar_Utils::refreshAccessToken();
         if($validToken){
-          $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-          'access_token');
-          $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-          'organizer_key');
-          $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
-          $headers = array();
-          $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
-          $headers[] = "Content-type:application/json";
-          $result = CRM_Gotowebinar_Utils::apiCall($url, $headers, json_encode($fields));
-          $response = json_decode($result, TRUE);
+          $response = CRM_Gotowebinar_Utils::registerParticipant($webinar_key, $fields);
         }
       }//DM
 
@@ -312,3 +293,4 @@ function gotowebinar_civicrm_buildForm($formName, &$form) {
     }
   }
 }
+

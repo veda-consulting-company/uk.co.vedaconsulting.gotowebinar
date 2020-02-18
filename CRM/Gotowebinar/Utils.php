@@ -10,7 +10,7 @@ class CRM_Gotowebinar_Utils {
   public function refreshAccessToken(){
     // FIX ME : currently not refreshing tokens automatically - if the the above response returns 'InvalidToken' error, setting validToken flag as FALSE and displaying authentication fields again.
     $validToken = FALSE;
-    $refreshToken = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $refreshToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'refresh_token');
     //If refresh token is not available then return NULL
     if(!$refreshToken){
@@ -18,8 +18,8 @@ class CRM_Gotowebinar_Utils {
     }
     //Setting up the curl fields
     //Retrieving the api_key and client_secret
-    $apiKey  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'api_key');
-    $clientSecret  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'client_secret');
+    $apiKey  = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP, 'api_key');
+    $clientSecret  = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP, 'client_secret');
     //Encoding the api key and client secret along with the ':' symbol into the base64 format
     $string = $apiKey.":".$clientSecret;
     $Base64EncodedCredentials = base64_encode($string);
@@ -30,9 +30,9 @@ class CRM_Gotowebinar_Utils {
     $url = WEBINAR_API_URL."/oauth/v2/token";
     $postFields = "grant_type=refresh_token&refresh_token=".$refreshToken;
 
-    $response = CRM_Gotowebinar_Form_Setting::apiCall($url, $headers, $postFields);
+    $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, $postFields);
     $clientInfo = json_decode($response, TRUE);
-    $validToken = CRM_Gotowebinar_Form_Setting::storeAccessToken($clientInfo);
+    $validToken = CRM_Gotowebinar_Utils::storeAccessToken($clientInfo);
     return $validToken;
   }
 
@@ -45,15 +45,15 @@ class CRM_Gotowebinar_Utils {
     //Update the values iff all the keys exist in the array
     if(array_key_exists('access_token',$clientInfo) && array_key_exists('organizer_key',$clientInfo) && array_key_exists('refresh_token',$clientInfo)){
       CRM_Core_BAO_Setting::setItem($clientInfo['access_token'],
-        self::WEBINAR_SETTING_GROUP,
+        CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
         'access_token'
       );
       CRM_Core_BAO_Setting::setItem($clientInfo['organizer_key'],
-          self::WEBINAR_SETTING_GROUP,
+          CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
           'organizer_key'
       );
       CRM_Core_BAO_Setting::setItem($clientInfo['refresh_token'],
-          self::WEBINAR_SETTING_GROUP,
+          CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
           'refresh_token'
       );
       return TRUE;
@@ -97,5 +97,23 @@ class CRM_Gotowebinar_Utils {
     curl_close($curl);
     return $apiResponse;
   }//DM
+
+  /**
+   *Function to register a participant for a webinar event
+   */
+  public function registerParticipant($webinar_key, $fields=NULL){
+    $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
+        'access_token');
+    $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
+        'organizer_key');
+    $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
+    $headers = array();
+    $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
+    $headers[] = "Content-type:application/json";
+
+    $result = CRM_Gotowebinar_Utils::apiCall($url, $headers, json_encode($fields));
+    $response = json_decode($result, TRUE);
+    return $response;
+  }
 
 }

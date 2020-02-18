@@ -8,6 +8,7 @@
     <div class="crm-accordion-body">
 
       <table class="form-layout-compressed">
+      {if $initial}
         <tr class="crm-webinar-setting-api-key-block">
           <td class="label">{$form.api_key.label}</td>
           <td>{$form.api_key.html}<br/>
@@ -22,19 +23,6 @@
             </span>
           </td>
         </tr>
-         <tr>
-            <td ><label>{ts}Participant Status To Be Considered {/ts}</label>
-                <br />
-                <div class="listing-box" style="height: 120px">
-                    {foreach from=$form.participant_status_id item="participant_status_val"}
-                        <div class="{cycle values="odd-row,even-row"}">
-                            {$participant_status_val.html}
-                        </div>
-                    {/foreach}
-                </div>
-            </td>
-        </tr>
-        {if $initial}
         <tr class="crm-webinar-setting-api-key-email">
           <td class="label">{$form.email_address.label}</td>
           <td>{$form.email_address.html}<br/>
@@ -48,6 +36,19 @@
             <span class="description">{ts}Password to connect Webinar account{/ts}
             </span>
           </td>
+        </tr>
+        {else}
+         <tr>
+            <td ><label>{ts}Participant Status To Be Considered {/ts}</label>
+                <br />
+                <div class="listing-box" style="height: 120px">
+                    {foreach from=$form.participant_status_id item="participant_status_val"}
+                        <div class="{cycle values="odd-row,even-row"}">
+                            {$participant_status_val.html}
+                        </div>
+                    {/foreach}
+                </div>
+            </td>
         </tr>
         {/if}
         {if $responseKey}
