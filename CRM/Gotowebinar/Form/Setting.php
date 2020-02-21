@@ -150,9 +150,10 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
         self::WEBINAR_SETTING_GROUP,
         'client_secret'
       );
-      //Getting the fields needed for curl execution
+
       $redirectUrl    = CRM_Utils_System::url('civicrm/gotowebinar/settings', 'reset=1',  TRUE, NULL, FALSE, TRUE);
       $url = WEBINAR_API_URL."/oauth/v2/token";
+      //Setting up the curl fields
       $postFields = "username=".$params['email_address']."&password=".$params['password']."&grant_type=password";
       //Encoding the api key and client secret along with the ':' symbol into the base64 format
       $string = $params['api_key'].":".$params['client_secret'];
@@ -165,7 +166,6 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
       $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, $postFields);
       $clientInfo = json_decode($response, TRUE);
-      //DM
 
       if(isset($clientInfo['int_err_code']) && $clientInfo['int_err_code'] != '') {
           $session = CRM_Core_Session::singleton();
@@ -204,8 +204,8 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     $organizerKey = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
     'organizer_key', NULL, FALSE
     );
-    //Setting up the curl fields
     $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/upcomingWebinars";
+    //Setting up the curl fields
     $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
     $headers[] = "Content-type:application/json";
     $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, NULL);
@@ -227,8 +227,9 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     $organizerKey = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
     'organizer_key', NULL, FALSE
     );
-    //Setting up the curl fields
+
     $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinarKey."/registrants/fields";
+    //Setting up the curl fields
     $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
     $headers[] = "Content-type:application/json";
     $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, NULL);

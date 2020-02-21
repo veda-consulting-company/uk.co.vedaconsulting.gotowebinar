@@ -96,7 +96,7 @@ class CRM_Gotowebinar_Utils {
     }
     curl_close($curl);
     return $apiResponse;
-  }//DM
+  }
 
   /**
    *Function to register a participant for a webinar event

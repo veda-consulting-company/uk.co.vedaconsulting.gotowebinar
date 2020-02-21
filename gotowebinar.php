@@ -196,17 +196,17 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
     $query          = "SELECT $webinarColumn AS webinar_id FROM $customGroupTableName WHERE entity_id = {$eventID}";
     $webinar_key    = CRM_Core_DAO::singleValueQuery($query);
 
-    if(!empty($webinar_key)) {//DM: changed according to the new api amendments
+    if(!empty($webinar_key)) {
       $response = CRM_Gotowebinar_Utils::registerParticipant($webinar_key, $fields);
 
-      // display if any errors and return
       if ((isset($response['int_err_code'])) && ($response['int_err_code'] == 'InvalidToken')) {
         $validToken = CRM_Gotowebinar_Utils::refreshAccessToken();
         if($validToken){
           $response = CRM_Gotowebinar_Utils::registerParticipant($webinar_key, $fields);
         }
-      }//DM
+      }
 
+      // display if any errors and return
       if ( isset($response['errorCode']) && !empty($response['errorCode']) ) {
         $errorCode = 'Webinar Error : '.$response['errorCode'];
         CRM_Core_Session::setStatus(ts($response['description']), ts($errorCode), 'error');
