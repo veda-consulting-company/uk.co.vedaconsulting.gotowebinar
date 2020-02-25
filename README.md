@@ -2,7 +2,7 @@
 
 ### Overview ###
 
-CiviCRM Events can be integrated with GoToWebinar
+CiviCRM Events can be integrated with GoToWebinar.
 
 ### Installation ###
 
