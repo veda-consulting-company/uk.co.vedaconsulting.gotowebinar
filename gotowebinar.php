@@ -297,7 +297,6 @@ function gotowebinar_civicrm_buildForm($formName, &$form) {
       }
       if(isset($upcomingWebinars['int_err_code']) && $upcomingWebinars['int_err_code'] != '') {
         $error['message'] = ts('Unable to fetch the Upcoming Webinars, please check the webinar settings page');
-        CRM_Core_Error::debug_var('error',$error['message']);
         $form->assign('error_message', $error);
       } else{
         $form->assign('upcomingWebinars', $upcomingWebinars );
