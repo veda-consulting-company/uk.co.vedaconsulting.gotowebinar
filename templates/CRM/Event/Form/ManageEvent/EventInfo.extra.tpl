@@ -1,9 +1,12 @@
-{if $smarty.get.cgcount gt '0'}
+{if $error_message}
+  {$error_message.message}
+{/if}
+{if $upcomingWebinars}
   <div id="webinarTableWarpper">
     <h2>Click any row below to populate Webinar Key.</h2><br />
-  
+
     <table id="webinar_settings" cellspacing="0" width="100%" >
-  
+
       <thead>
         <tr>
           <th>Description</th>
@@ -13,8 +16,8 @@
           <th>End Time</th>
         </tr>
       </thead>
- 
-      <tbody> 
+
+      <tbody>
         {foreach from=$upcomingWebinars item=webinar}
         {assign var=times value=$webinar.times}
           <tr>
@@ -25,30 +28,30 @@
             <td style="cursor: pointer; sortable="true">{$times[0].endTime|crmDate}</td>
           </tr>
         {/foreach}
-      </tbody>    
+      </tbody>
     </table>
-  </div> 
-  
-{literal} 
-<script> 
+  </div>
+
+{literal}
+<script>
 cj(document).ready(function() {
   var webinar_settings = cj('#webinarTableWarpper').html();
   if (cj('#webinarTableWarpper').length == 0) {
     cj("input[data-crm-custom='Webinar_Event:Webinar_id']").parent().parent().parent().parent().after(webinar_settings);
   };
-		  
+
   cj(document).tooltip();
-  
-  cj('#webinar_settings tbody').on('click', 'tr', function (){            
+
+  cj('#webinar_settings tbody').on('click', 'tr', function (){
     var name = cj('td', this).eq(2).text();
     cj("input[data-crm-custom='Webinar_Event:Webinar_id']").val(name);
   });
-  
-  cj('#webinar_settings').dataTable(); 
+
+  cj('#webinar_settings').dataTable();
   // if(cj(window.ids).length==0){
-  //   cj('#webinarTableWarpper').hide(); 
+  //   cj('#webinarTableWarpper').hide();
   // }
-});		    
+});
 </script>
 {/literal}
 {/if}

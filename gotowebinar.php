@@ -2,7 +2,7 @@
 
 require_once 'gotowebinar.civix.php';
 define('WEBINAR_API_URL', 'https://api.getgo.com');
-define('WEBINAR_KEY', 'gL39JZHP8Uz1yMu3ii8vDAoKu8CDehZM');
+define('REGISTRANT_KEY','Registrant_Key');
 
 /**
  * Implementation of hook_civicrm_config
@@ -197,27 +197,14 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
     $webinar_key    = CRM_Core_DAO::singleValueQuery($query);
 
     if(!empty($webinar_key)) {
-      $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-          'access_token', NULL, FALSE
-        );
-      $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
-          'organizer_key', NULL, FALSE
-        );
-      $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinar_key."/registrants";
-      $options = array(
-                      CURLOPT_RETURNTRANSFER => TRUE, // return web page
-                      CURLOPT_SSL_VERIFYHOST => FALSE,
-                      CURLOPT_SSL_VERIFYPEER => FALSE,
-                      CURLOPT_HTTPHEADER     => array("Authorization: OAuth oauth_token=".$accessToken, "Content-type:application/json"),
-                      CURLOPT_HEADER         => FALSE,
-                    );
-      $session = curl_init( $url );
-      curl_setopt_array( $session, $options );
-    }
-        curl_setopt ($session, CURLOPT_POSTFIELDS, json_encode($fields));
-        $output = curl_exec($session);
-        $header = curl_getinfo( $session );
-        $response = json_decode($output, TRUE);
+      $response = CRM_Gotowebinar_Utils::registerParticipant($webinar_key, $fields);
+
+      if ((isset($response['int_err_code'])) && ($response['int_err_code'] == 'InvalidToken')) {
+        $validToken = CRM_Gotowebinar_Utils::refreshAccessToken();
+        if($validToken){
+          $response = CRM_Gotowebinar_Utils::registerParticipant($webinar_key, $fields);
+        }
+      }
 
       // display if any errors and return
       if ( isset($response['errorCode']) && !empty($response['errorCode']) ) {
@@ -225,15 +212,68 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
         CRM_Core_Session::setStatus(ts($response['description']), ts($errorCode), 'error');
         return;
       }
+      $customGroupDetails = civicrm_api3('CustomGroup', 'get', [
+        'sequential' => 1,
+        'name' => "Webinar_Participant",
+        ]);
+      $custom_group_id = $customGroupDetails['id'];
+      $custom_group_table_name = $customGroupDetails['values'][0]['table_name'];
+      $customFieldDetails = civicrm_api3('CustomField', 'get', [
+        'sequential' => 1,
+        'name' => REGISTRANT_KEY,
+        'custom_group_id' => $custom_group_id,
+        ]);
+      $regColName = $customFieldDetails['values'][0]['column_name'];
 
-      //stored data into custom table
-      $id = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_CustomField', 'Registrant_Key', 'id', 'name');
-      $params = array(
-        'version' => 3,
-        'entity_id' => $pid,
-        "custom_{$id}" => $response['registrantKey'],
+      $customTableQuery = "INSERT INTO {$custom_group_table_name} ($regColName,entity_id) VALUES(%1,%2)";
+      $QueryParams = array(
+        '1' => array($response['registrantKey'], 'String'),
+        '2' => array($pid, 'Integer')
+        );
+      CRM_Core_DAO::executeQuery($customTableQuery, $QueryParams);
+      $webinar_participant_details = array(
+        'participant_id' => $pid,
+        'registrantKey' => $response['registrantKey'],
       );
-      $finalResult = civicrm_api3('CustomValue', 'create', $params);
+
+      $session = CRM_Core_Session::singleton();
+      $session->set('webinar_participant_details',$webinar_participant_details);
+    }
+  }
+}
+
+//DM: Fixing the registrantKey updation into the custom table for offline registrations
+function gotowebinar_civicrm_custom( $op, $groupID, $entityID, &$params ){
+
+  $customGroupDetails = civicrm_api3('CustomGroup', 'get', [
+    'sequential' => 1,
+    'name' => "Webinar_Participant",
+  ]);
+  $session = CRM_Core_Session::singleton();
+  $webinarDetails = $session->get('webinar_participant_details');
+
+  if (($op == 'create' || $op == 'edit')
+    && $groupID == $customGroupDetails['id']
+    && !empty($webinarDetails)
+    && $webinarDetails['participant_id'] == $entityID
+  ) {
+    $tableName = $customGroupDetails['values'][0]['table_name'];
+
+    $customFieldDetails = civicrm_api3('CustomField', 'get', [
+      'sequential' => 1,
+      'name' => REGISTRANT_KEY,
+      'custom_group_id' => $customGroupDetails['id'],
+      ]);
+    $regKeyField = $customFieldDetails['values'][0];
+    $regColName  = $regKeyField['column_name'];
+
+    foreach ($params as $key => $value) {
+      if ($value['custom_field_id'] == $regKeyField['id'] && empty($value['value'])) {
+        $sqlParams = array(1 =>  array($webinarDetails['registrantKey'], 'String'), 2 =>  array($entityID, 'Integer'));
+        CRM_Core_DAO::executeQuery("UPDATE {$tableName} SET {$regColName} = %1 WHERE entity_id = %2", $sqlParams);
+        $session->set('webinar_participant_details', NULL);
+      }
+    }
   }
 }
 
@@ -249,7 +289,19 @@ function gotowebinar_civicrm_buildForm($formName, &$form) {
 
     if($accessToken && $organizerKey) {
       $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
-      $form->assign('upcomingWebinars', $upcomingWebinars );
+      if(isset($upcomingWebinars['int_err_code']) && $upcomingWebinars['int_err_code'] == 'InvalidToken'){
+        $validToken = CRM_Gotowebinar_Utils::refreshAccessToken();
+        if($validToken){
+          $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
+        }
+      }
+      if(isset($upcomingWebinars['int_err_code']) && $upcomingWebinars['int_err_code'] != '') {
+        $error['message'] = ts('Unable to fetch the Upcoming Webinars, please check the webinar settings page');
+        $form->assign('error_message', $error);
+      } else{
+        $form->assign('upcomingWebinars', $upcomingWebinars );
+      }
     }
   }
 }
+
