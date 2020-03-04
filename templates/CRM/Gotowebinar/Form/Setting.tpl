@@ -12,14 +12,14 @@
         <tr class="crm-webinar-setting-api-key-block">
           <td class="label">{$form.api_key.label}</td>
           <td>{$form.api_key.html}<br/>
-            <span class="description">{ts}API Key from Webinar{/ts}
+            <span class="description">{ts}The Consumer Key from your GoToWebinar App{/ts}
             </span>
           </td>
         </tr>
         <tr class="crm-webinar-setting-client-secret-block">
           <td class="label">{$form.client_secret.label}</td>
           <td>{$form.client_secret.html}<br/>
-            <span class="description">{ts}Client Secret from Webinar{/ts}
+            <span class="description">{ts}The Consumer Secret from your GoToWebinar App{/ts}
             </span>
           </td>
         </tr>
