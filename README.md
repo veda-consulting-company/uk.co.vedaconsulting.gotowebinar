@@ -10,6 +10,12 @@ CiviCRM Events can be integrated with GoToWebinar
 * Configure GoToWebinar details in **Events >> GoToWebinar Settings** (civicrm/gotowebinar/settings?reset=1)
 ![Screenshot of integration options](images/webinar-setting-page.jpg)
 
+* Create an "app" on the GoToWebinar apps page. Copy the Consumer Key and Consumer Secret into the settings page in CiviCRM. You will also need to use the username and password that you use to log into the GoToWebinar website. The username and password will not be saved in CiviCRM.
+
+* The authentication will get refreshed occassionally. It will attempt to reauthenticate when trying to fetch webinar information on event pages and on the settings page. If you see a notice that GoToWebinar is disconnected, first try to refresh the settings page. If that doesn't work you may need to provide your username and password again. That should be rare.
+
+* After the successful authentication, list of upcoming webinars will be fetched and displayed on the screen. (Note : Firstname, lastname & email are the only fields that get pushed to webinar for now. Any webinars with additional mandatory fields will not be getting the participants added from CiviCRM).
+
 * After a successful authentication, a list of upcoming webinars will be fetched and displayed on the screen. (Note: First name, last name & email are the only fields that get pushed to the webinar for now. Webinars with additional mandatory fields will not get participants added from CiviCRM)
 
 ![Screenshot of integration options](images/setting-page-after-auth.jpg)
@@ -22,6 +28,10 @@ CiviCRM Events can be integrated with GoToWebinar
 * When participants register for that civiCRM Event, those participants are automatically created for GoToWebinar Event
 
 ### Changelog ###
+
+#### Ver 3.0.1 ####
+* Updated Installations instructions from FreeForms fork 
+* Changed labels on settings screen to mirror GoToWebinar as per FreeForms fork
 
 #### Ver 3.0.0 ####
 * Migrated to a new Webinar API which uses OAuthv2 standard
@@ -36,5 +46,3 @@ CiviCRM Events can be integrated with GoToWebinar
 ### Support ###
 
 support@vedaconsulting.co.uk
-
-
