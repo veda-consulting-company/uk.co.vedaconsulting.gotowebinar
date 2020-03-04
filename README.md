@@ -16,8 +16,6 @@ CiviCRM Events can be integrated with GoToWebinar
 
 * After the successful authentication, list of upcoming webinars will be fetched and displayed on the screen. (Note : Firstname, lastname & email are the only fields that get pushed to webinar for now. Any webinars with additional mandatory fields will not be getting the participants added from CiviCRM).
 
-* After a successful authentication, a list of upcoming webinars will be fetched and displayed on the screen. (Note: First name, last name & email are the only fields that get pushed to the webinar for now. Webinars with additional mandatory fields will not get participants added from CiviCRM)
-
 ![Screenshot of integration options](images/setting-page-after-auth.jpg)
 
 ### Usage ###
