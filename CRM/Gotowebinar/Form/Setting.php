@@ -80,10 +80,10 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
     // If valid token not found, displaying the authentication fields
     if (!$validToken) {
-      $this->add('password', 'api_key', ts('API Key'), array(
+      $this->add('password', 'api_key', ts('Consumer Key'), array(
         'size' => 48,
       ), TRUE);
-      $this->add('password', 'client_secret', ts('Client Secret'), array(
+      $this->add('password', 'client_secret', ts('Consumer Secret'), array(
         'size' => 48,
       ), TRUE);
       $this->add('text', "email_address", ts('Email Address'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'), TRUE);

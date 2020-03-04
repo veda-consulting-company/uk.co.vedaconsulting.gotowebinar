@@ -2,7 +2,7 @@
 
 ### Overview ###
 
-CiviCRM Events can be integrated with GoToWebinar
+CiviCRM Events can be integrated with GoToWebinar.
 
 ### Installation ###
 
@@ -23,7 +23,7 @@ CiviCRM Events can be integrated with GoToWebinar
 * Setup CiviCRM Event with a Webinar Key
 ![Screenshot of integration options](images/manage-event.jpg)
 
-* When participants register for that civiCRM Event, those participants are automatically created for GoToWebinar Event
+* When participants register for that CiviCRM  Event, they are automatically created for the GoToWebinar event as well.
 
 ### Changelog ###
 
