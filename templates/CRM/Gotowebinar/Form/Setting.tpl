@@ -6,8 +6,29 @@
       {ts}Client Secret Setting{/ts}
     </div><!-- /.crm-accordion-header -->
     <div class="crm-accordion-body">
+      {if !$initial}
+       <div>
+        <div>
+          <label>{ts}Participant Status To Be Considered {/ts}</label>
+        </div>
+        <div class="listing-box" style="height: 120px">
+            {foreach from=$form.participant_status_id item="participant_status_val"}
+                <div class="{cycle values="odd-row,even-row"}">
+                    {$participant_status_val.html}
+                </div>
+            {/foreach}
+        </div>
+      </div>
+      <br/>
+      <br/>
+      {/if}
 
-      <table class="form-layout-compressed">
+      {if $responseKey}
+        <div class="crm-webinar-information-api-key-block alert alert-info">
+            <strong>Info:</strong> Your account is connected.&nbsp;Here are your Upcoming Webinars
+        </div>
+      {/if}
+      <table class="dataTable">
       {if $initial}
         <tr class="crm-webinar-setting-api-key-block">
           <td class="label">{$form.api_key.label}</td>
@@ -37,55 +58,41 @@
             </span>
           </td>
         </tr>
-        {else}
-         <tr>
-            <td ><label>{ts}Participant Status To Be Considered {/ts}</label>
-                <br />
-                <div class="listing-box" style="height: 120px">
-                    {foreach from=$form.participant_status_id item="participant_status_val"}
-                        <div class="{cycle values="odd-row,even-row"}">
-                            {$participant_status_val.html}
-                        </div>
-                    {/foreach}
-                </div>
-            </td>
-        </tr>
         {/if}
         {if $responseKey}
-            <tr class="crm-webinar-information-api-key-block">
-                <td class="label" style="color:green"><b>{ts} Info:{/ts}</td>
-                <td class="label" style="color:green"><b>{ts}Your account is connected.&nbsp;Here are your Upcoming Webinars {/ts}</td>
-            </tr>
-            <tr style="background-color: #CDE8FE;">
-                      <td><b>{ts}Description{/ts}</td>
-                      <td><b>{ts}Subject{/ts}</td>
-                      <td><b>{ts}Webinar Key{/ts}</td>
-                      <td><b>{ts}Start Time{/ts}</td>
-                      <td><b>{ts}End Time{/ts}</td>
+          <thead >
+            <tr>
+              <th>{ts}Description{/ts}</th>
+              <th>{ts}Subject{/ts}</th>
+              <th>{ts}Webinar Key{/ts}</th>
+              <th>{ts}Start Time{/ts}</th>
+              <th>{ts}End Time{/ts}</th>
            </tr>
-            {foreach from=$upcomingWebinars item=webinar}
+           <tbody>
+              {foreach from=$upcomingWebinars item=webinar}
                 <tr>
-                <td>{$webinar.description}</td>
-                <td>
-                  {$webinar.subject}
-                  <p style="color: red;">{$webinar.warning}</p>
-                </td>
-                <td>{$webinar.webinarKey}</td>
-                {assign var=times value=$webinar.times}
-                <td>{$times[0].startTime|crmDate}</td>
-                <td>{$times[0].endTime|crmDate}</td>
+                  <td>{$webinar.description}</td>
+                  <td>
+                    {$webinar.subject}
+                    <p style="color: red;">{$webinar.warning}</p>
+                  </td>
+                  <td>{$webinar.webinarKey}</td>
+                  {assign var=times value=$webinar.times}
+                  <td>{$times[0].startTime|crmDate}</td>
+                  <td>{$times[0].endTime|crmDate}</td>
                 </tr>
-            {/foreach}
+              {/foreach}
+            </tbody>
         {/if}
         {if $clienterror}
             <tr class="crm-webinar-information-erro-api-key-block">
-            <td class="label" style="color:red"><b>{ts} Info:{/ts}</td>
+            <td class="label" style="color:red">{ts} Info:{/ts}</td>
             <td class="label" style="color:red">{ts}{$clienterror.int_err_code}{/ts}&nbsp;&nbsp;&nbsp;&nbsp;{ts}{$clienterror.msg}{/ts}</td>
             </tr>
         {/if}
         {if $error}
             <tr class="crm-webinar-information-erro-api-key-block">
-            <td class="label" style="color:red"><b>{ts} Info:{/ts}</td>
+            <td class="label" style="color:red">{ts} Info:{/ts}</td>
             <td class="label" style="color:red">{ts}{$error.int_err_code}{/ts}&nbsp;&nbsp;&nbsp;&nbsp;{ts}{$error.msg}{/ts}</td>
             </tr>
         {/if}
@@ -96,4 +103,3 @@
     </div>
   </div>
 </div>
-
