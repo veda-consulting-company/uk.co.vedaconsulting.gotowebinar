@@ -55,7 +55,7 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
         foreach ($upcomingWebinars as $key => $webinar) {
           $registrationFields = CRM_Gotowebinar_Form_Setting::getRegistrationFields($webinar['webinarKey']);
 
-          if (!empty($registrationFields && isset($registrationFields['fields']))) {
+          if (!empty($registrationFields) && isset($registrationFields['fields'])) {
             $numberOfFields = count($registrationFields['fields']);
             //firstName, lastName, email are mandatory fields in Webinar. If number of fields exceeds 3, display warning to the users
             $upcomingWebinars[$key]['warning'] = '';
