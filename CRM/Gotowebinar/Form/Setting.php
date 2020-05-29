@@ -25,10 +25,6 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
    */
   public function buildQuickForm() {
 
-    $this->addElement('text', 'api_key', ts('API Key'), array(
-      'size' => 48,
-    ));
-
     $status = CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label');
     foreach ($status as $id => $Name) {
       $this->addElement('checkbox', "participant_status_id[$id]", NULL, $Name);
@@ -45,20 +41,21 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     if($accessToken && $organizerKey) {
       $validToken = TRUE;
       $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
+      //If Invalid token then refresh the accessToken and obtain the upcomingWebinars
+      if(isset($upcomingWebinars['int_err_code']) && $upcomingWebinars['int_err_code'] == 'InvalidToken'){
+        $validToken = CRM_Gotowebinar_Utils::refreshAccessToken();
+        if($validToken){
+          $upcomingWebinars = CRM_Gotowebinar_Form_Setting::findUpcomingWebinars();
+        }
+      }
       if(isset($upcomingWebinars['int_err_code']) and $upcomingWebinars['int_err_code'] != '') {
         $this->assign('error', $upcomingWebinars);
-        // FIX ME : currently not refreshing tokens automatically - if the the above response returns 'InvalidToken' error, setting validToken flag as FALSE and displaying authentication fields again.
-        if ($upcomingWebinars['int_err_code'] == 'InvalidToken') {
-          $validToken = FALSE;
-          // display the error
-          CRM_Core_Session::setStatus(ts('Tokens stored are not valid/expired. Refresh the tokens using your login details'), ts('Invalid/Expired Token'), 'error');
-        }
       } else {
         // GK 12102017 - Check each webinar's fields and display warning, if any of the webinars required additonal required fields
         foreach ($upcomingWebinars as $key => $webinar) {
           $registrationFields = CRM_Gotowebinar_Form_Setting::getRegistrationFields($webinar['webinarKey']);
 
-          if (!empty($registrationFields && isset($registrationFields['fields']))) {
+          if (!empty($registrationFields) && isset($registrationFields['fields'])) {
             $numberOfFields = count($registrationFields['fields']);
             //firstName, lastName, email are mandatory fields in Webinar. If number of fields exceeds 3, display warning to the users
             $upcomingWebinars[$key]['warning'] = '';
@@ -83,8 +80,14 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
     // If valid token not found, displaying the authentication fields
     if (!$validToken) {
+      $this->add('password', 'api_key', ts('Consumer Key'), array(
+        'size' => 48,
+      ), TRUE);
+      $this->add('password', 'client_secret', ts('Consumer Secret'), array(
+        'size' => 48,
+      ), TRUE);
       $this->add('text', "email_address", ts('Email Address'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email', 'email'), TRUE);
-      $this->add('text', "password", ts('Password'), array('size' => 48,), TRUE);
+      $this->add('password', 'password', ts('Password'), ['autocomplete' => 'off'], TRUE);
       $buttons = array(
         array(
           'type' => 'submit',
@@ -101,8 +104,14 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
   public function setDefaultValues() {
     $defaults = $details = array();
     $status  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'participant_status');
-    if(WEBINAR_KEY) {
-      $defaults['api_key'] = WEBINAR_KEY;
+    $apiKey  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'api_key');
+    $clientSecret  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'client_secret');
+
+    if($apiKey) {
+      $defaults['api_key'] = $apiKey;
+    }
+    if($clientSecret) {
+      $defaults['client_secret'] = $clientSecret;
     }
     if ($status) {
       foreach ($status as $key => $id) {
@@ -123,22 +132,41 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     // Store the submitted values in an array.
     $params = $this->controller->exportValues($this->_name);
     // If gotowebinar was already connected, we introduced button called 'save status'
-    CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
-        self::WEBINAR_SETTING_GROUP, 'participant_status'
-      );
+    if(isset($params['participant_status_id'])){
+      CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
+          self::WEBINAR_SETTING_GROUP, 'participant_status'
+        );
+    }
 
     // Save the API Key & Save the Security Key
-    if (CRM_Utils_Array::value('api_key', $params) && CRM_Utils_Array::value('email_address', $params) && CRM_Utils_Array::value('password', $params)) {
-      CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
-        self::WEBINAR_SETTING_GROUP, 'participant_status'
+    if (CRM_Utils_Array::value('api_key', $params) && CRM_Utils_Array::value('client_secret', $params)
+      && CRM_Utils_Array::value('email_address', $params) && CRM_Utils_Array::value('password', $params)) {
+      //Storing the api_key and client_secret obtained from the form
+      CRM_Core_BAO_Setting::setItem($params['api_key'],
+        self::WEBINAR_SETTING_GROUP,
+        'api_key'
       );
-      $apiKey         = urlencode($params['api_key']);
-      $username       = urlencode($params['email_address']);
-      $password       = urlencode($params['password']);
-      $redirectUrl    = CRM_Utils_System::url('civicrm/gotowebinar/settings', 'reset=1',  TRUE, NULL, FALSE, TRUE);
+      CRM_Core_BAO_Setting::setItem($params['client_secret'],
+        self::WEBINAR_SETTING_GROUP,
+        'client_secret'
+      );
 
-      $url = WEBINAR_API_URL."/oauth/access_token?grant_type=password&user_id=".$username."&password=".$password."&client_id=".$apiKey;
-      $clientInfo   = $this->requestPost($url);
+      $redirectUrl    = CRM_Utils_System::url('civicrm/gotowebinar/settings', 'reset=1',  TRUE, NULL, FALSE, TRUE);
+      $url = WEBINAR_API_URL."/oauth/v2/token";
+      //Setting up the curl fields
+      $postFields = "username=".$params['email_address']."&password=".$params['password']."&grant_type=password";
+      //Encoding the api key and client secret along with the ':' symbol into the base64 format
+      $string = $params['api_key'].":".$params['client_secret'];
+      $Base64EncodedCredentials = base64_encode($string);
+      //Header fields are set
+      $headers = array();
+      $headers[] = "Authorization: Basic ".$Base64EncodedCredentials;
+      $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+      $url = WEBINAR_API_URL."/oauth/v2/token";
+
+      $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, $postFields);
+      $clientInfo = json_decode($response, TRUE);
+
       if(isset($clientInfo['int_err_code']) && $clientInfo['int_err_code'] != '') {
           $session = CRM_Core_Session::singleton();
           $session->set("autherror", $clientInfo);
@@ -152,14 +180,7 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
       }
       else {
         if($clientInfo['access_token'] && $clientInfo['organizer_key']) {
-          CRM_Core_BAO_Setting::setItem($clientInfo['access_token'],
-            self::WEBINAR_SETTING_GROUP,
-            'access_token'
-          );
-          CRM_Core_BAO_Setting::setItem($clientInfo['organizer_key'],
-              self::WEBINAR_SETTING_GROUP,
-              'organizer_key'
-          );
+          CRM_Gotowebinar_Utils::storeAccessToken($clientInfo);
           $session = CRM_Core_Session::singleton();
           $session->set("autherror", NULL);
           CRM_Utils_System::redirect($redirectUrl);
@@ -175,25 +196,6 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     }
   }
 
-  function requestPost($url){
-    set_time_limit(160);
-    // Initialise output variable
-    $output = array();
-    $options = array(
-                    CURLOPT_RETURNTRANSFER => true, // return web page
-                    CURLOPT_SSL_VERIFYHOST => false,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                  );
-    $session = curl_init( $url );
-    curl_setopt_array( $session, $options );
-
-    $output = curl_exec($session);
-    $header = curl_getinfo( $session );
-    $response = json_decode($output, TRUE);
-    CRM_Core_Error::debug_var('Connection response', $response);
-    return $response;
-  } // END function request
-
   static function findUpcomingWebinars() {
 
     $accessToken = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
@@ -203,21 +205,12 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     'organizer_key', NULL, FALSE
     );
     $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/upcomingWebinars";
-
-    $options = array(
-                    CURLOPT_RETURNTRANSFER => TRUE, // return web page
-                    CURLOPT_SSL_VERIFYHOST => false,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_HTTPHEADER => array("Authorization: OAuth oauth_token=".$accessToken, "Content-type:application/json"),
-                    CURLOPT_HEADER  => FALSE,
-                  );
-
-    $session  = curl_init( $url );
-    curl_setopt_array( $session, $options );
-    $output   = curl_exec($session);
-    $header   = curl_getinfo( $session );
-    $response = json_decode(preg_replace('/("\w+"):(-?\d+(.\d+)?)/', '\1:"\2"', $output), true);
-    return  $response;
+    //Setting up the curl fields
+    $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
+    $headers[] = "Content-type:application/json";
+    $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, NULL);
+    $webinarDetails = json_decode(preg_replace('/("\w+"):(-?\d+(.\d+)?)/', '\1:"\2"', $response), true);
+    return  $webinarDetails;
   }
 
   // Function to get registration fields of a webinar
@@ -234,22 +227,14 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     $organizerKey = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
     'organizer_key', NULL, FALSE
     );
+
     $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/webinars/".$webinarKey."/registrants/fields";
-
-    $options = array(
-                    CURLOPT_RETURNTRANSFER => TRUE, // return web page
-                    CURLOPT_SSL_VERIFYHOST => false,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_HTTPHEADER => array("Authorization: OAuth oauth_token=".$accessToken, "Content-type:application/json"),
-                    CURLOPT_HEADER  => FALSE,
-                  );
-
-    $session  = curl_init( $url );
-    curl_setopt_array( $session, $options );
-    $output   = curl_exec($session);
-    $header   = curl_getinfo( $session );
-    $response = json_decode(preg_replace('/("\w+"):(-?\d+(.\d+)?)/', '\1:"\2"', $output), true);
-    return  $response;
+    //Setting up the curl fields
+    $headers[] = "Authorization: OAuth oauth_token=".$accessToken;
+    $headers[] = "Content-type:application/json";
+    $response = CRM_Gotowebinar_Utils::apiCall($url, $headers, NULL);
+    $registrationFields = json_decode(preg_replace('/("\w+"):(-?\d+(.\d+)?)/', '\1:"\2"', $response), true);
+    return  $registrationFields;
   }
 
 }

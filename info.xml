@@ -8,13 +8,14 @@
     <author>Veda Consulting</author>
     <email>support@vedaconsulting.co.uk</email>
   </maintainer>
-  <releaseDate>2017-10-14</releaseDate>
-  <version>2.0.0</version>
+  <releaseDate>2020-05-27</releaseDate>
+  <version>3.0.2</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>4.5</ver>
     <ver>4.6</ver>
     <ver>4.7</ver>
+    <ver>5.20</ver>
   </compatibility>
   <comments></comments>
   <civix>
