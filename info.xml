@@ -8,8 +8,8 @@
     <author>Veda Consulting</author>
     <email>support@vedaconsulting.co.uk</email>
   </maintainer>
-  <releaseDate>2020-05-27</releaseDate>
-  <version>3.0.2</version>
+  <releaseDate>2020-07-16</releaseDate>
+  <version>3.0.3</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>4.5</ver>
