@@ -30,10 +30,10 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
       $this->addElement('checkbox', "participant_status_id[$id]", NULL, $Name);
     }
 
-    $accessToken = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $accessToken = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
     );
-    $organizerKey = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $organizerKey = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP,
       'organizer_key', NULL, FALSE
     );
 
@@ -103,9 +103,9 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
   public function setDefaultValues() {
     $defaults = $details = array();
-    $status  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'participant_status');
-    $apiKey  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'api_key');
-    $clientSecret  = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP, 'client_secret');
+    $status  = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP, 'participant_status');
+    $apiKey  = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP, 'api_key');
+    $clientSecret  = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP, 'client_secret');
 
     if($apiKey) {
       $defaults['api_key'] = $apiKey;
@@ -133,7 +133,7 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     $params = $this->controller->exportValues($this->_name);
     // If gotowebinar was already connected, we introduced button called 'save status'
     if(isset($params['participant_status_id'])){
-      CRM_Core_BAO_Setting::setItem(array_keys($params['participant_status_id']),
+      CRM_Gotowebinar_Utils::setItem(array_keys($params['participant_status_id']),
           self::WEBINAR_SETTING_GROUP, 'participant_status'
         );
     }
@@ -142,11 +142,11 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     if (CRM_Utils_Array::value('api_key', $params) && CRM_Utils_Array::value('client_secret', $params)
       && CRM_Utils_Array::value('email_address', $params) && CRM_Utils_Array::value('password', $params)) {
       //Storing the api_key and client_secret obtained from the form
-      CRM_Core_BAO_Setting::setItem($params['api_key'],
+      CRM_Gotowebinar_Utils::setItem($params['api_key'],
         self::WEBINAR_SETTING_GROUP,
         'api_key'
       );
-      CRM_Core_BAO_Setting::setItem($params['client_secret'],
+      CRM_Gotowebinar_Utils::setItem($params['client_secret'],
         self::WEBINAR_SETTING_GROUP,
         'client_secret'
       );
@@ -198,10 +198,10 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
 
   static function findUpcomingWebinars() {
 
-    $accessToken = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $accessToken = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
     );
-    $organizerKey = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $organizerKey = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP,
     'organizer_key', NULL, FALSE
     );
     $url = WEBINAR_API_URL."/G2W/rest/organizers/".$organizerKey."/upcomingWebinars";
@@ -221,10 +221,10 @@ class CRM_Gotowebinar_Form_Setting extends CRM_Core_Form {
     }
 
     // FIX ME :  These post request needs to be moved into function and called everywhere
-    $accessToken = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $accessToken = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
     );
-    $organizerKey = CRM_Core_BAO_Setting::getItem(self::WEBINAR_SETTING_GROUP,
+    $organizerKey = CRM_Gotowebinar_Utils::getItem(self::WEBINAR_SETTING_GROUP,
     'organizer_key', NULL, FALSE
     );
 
