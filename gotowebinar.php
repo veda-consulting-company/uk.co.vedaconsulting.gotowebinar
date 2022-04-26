@@ -148,7 +148,7 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
       LEFT JOIN civicrm_value_webinar_participant cw ON cp.id = cw.entity_id";
 
     $where  = " WHERE cp.id = %1 AND (cw.registrant_key is null OR cw.registrant_key='')";
-    $status = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP, 'participant_status');
+    $status = CRM_Gotowebinar_Utils::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP, 'participant_status');
     if (!empty($status)) {
       $statusValues = array_values($status);
       $where .= " AND cp.status_id IN ( ".implode(' , ', $statusValues)." )";
@@ -280,10 +280,10 @@ function gotowebinar_civicrm_custom( $op, $groupID, $entityID, &$params ){
 function gotowebinar_civicrm_buildForm($formName, &$form) {
   if ($formName == 'CRM_Event_Form_ManageEvent_EventInfo' AND ($form->getAction() == CRM_Core_Action::ADD OR $form->getAction() == CRM_Core_Action::UPDATE)) {
 
-     $accessToken = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
+     $accessToken = CRM_Gotowebinar_Utils::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'access_token', NULL, FALSE
     );
-      $organizerKey = CRM_Core_BAO_Setting::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
+      $organizerKey = CRM_Gotowebinar_Utils::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
       'organizer_key', NULL, FALSE
     );
 

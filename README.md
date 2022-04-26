@@ -11,7 +11,9 @@ CiviCRM Events can be integrated with GoToWebinar.
 
 ![Screenshot of GoToWebinar Settings](images/webinar-setting-page.jpg)
 
-* Create an "app" on the GoToWebinar apps page. Copy the **Consumer Key** and **Consumer Secret** into the settings page in CiviCRM. You will also need to use the username and password that you use to log into the GoToWebinar website. The username and password will not be saved in CiviCRM.
+* Create an "app" on the GoToWebinar apps page. Setup Redirect URL : [https://yourwebsite.com]/civicrm/gotowebinar/settings. (replace yourwebsite.com with your website domain)
+* Copy the **Client Key** and **Consumer Secret** into the settings page in CiviCRM.
+* You will also need to use the username and password to log into the GoToWebinar website. The username and password will not be saved in CiviCRM.
 * The authentication will get refreshed occassionally. It will attempt to reauthenticate when trying to fetch webinar information on event pages and on the settings page. If you see a notice that GoToWebinar is disconnected, first try to refresh the settings page. If that doesn't work you may need to provide your username and password again. That should be rare.
 * After a successful authentication, a list of upcoming webinars will be fetched and displayed on the screen. (Note: first name, last name & email are the only fields that get pushed to the webinar for now. Webinars with additional mandatory fields will not get participants added from CiviCRM.)
 
@@ -25,6 +27,10 @@ CiviCRM Events can be integrated with GoToWebinar.
 * When participants register for that CiviCRM Event, they are automatically created for the GoToWebinar event as well.
 
 ### Changelog ###
+
+#### Ver 3.0.4 ####
+* Migrated to New OAuth v2 Proxy API
+* Fixed dedprecated warning during set/get setting values
 
 #### Ver 3.0.1 ####
 * Updated Installations instructions from FreeForms fork 
