@@ -165,6 +165,12 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
       'email'     => $fieldsDao->email,
       );
     }
+
+    //48 exit if no matching record (e.g. unsynched status)
+    if (empty($fields)) {
+      return;
+    }
+
     $custom_group_name = 'Webinar_Event';
     $customGroupParams = array(
         'version'     => 3,
