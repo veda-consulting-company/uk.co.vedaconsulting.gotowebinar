@@ -18,11 +18,15 @@
     <ver>5.20</ver>
     <ver>5.3</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/Gotowebinar</namespace>
+    <format>22.05.2</format>
   </civix>
-   <urls>
+  <urls>
     <url desc="Documentation">https://github.com/veda-consulting/uk.co.vedaconsulting.gotowebinar/blob/master/README.md</url>
   </urls>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+  </mixins>
 </extension>

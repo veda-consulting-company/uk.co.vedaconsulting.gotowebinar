@@ -21,7 +21,6 @@ function gotowebinar_civicrm_config(&$config) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
 function gotowebinar_civicrm_xmlMenu(&$files) {
-  _gotowebinar_civix_civicrm_xmlMenu($files);
 }
 
 /**
@@ -91,7 +90,7 @@ function gotowebinar_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
 function gotowebinar_civicrm_managed(&$entities) {
-  return _gotowebinar_civix_civicrm_managed($entities);
+  return;
 }
 
 /**
@@ -104,7 +103,6 @@ function gotowebinar_civicrm_managed(&$entities) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function gotowebinar_civicrm_caseTypes(&$caseTypes) {
-  _gotowebinar_civix_civicrm_caseTypes($caseTypes);
 }
 
 /**
@@ -113,9 +111,7 @@ function gotowebinar_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
 function gotowebinar_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  _gotowebinar_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
-
 
 function gotowebinar_civicrm_navigationMenu(&$params){
   $parentId             = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Navigation', 'Events', 'id', 'name');
