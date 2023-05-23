@@ -175,10 +175,7 @@ function gotowebinar_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
     );
     $custom_group_ret = civicrm_api('CustomGroup', 'GET', $customGroupParams);
     if ($custom_group_ret['is_error'] || $custom_group_ret['count'] == 0) {
-        throw new CRM_Finance_BAO_Import_ValidateException(
-                "Can't find custom group for Webinar_Event",
-                $excCode,
-                $value);
+        throw new CRM_Core_Exception("Can't find custom group for Webinar_Event");
     }
     $customGroupID = $custom_group_ret['id'];
     $customGroupTableName = $custom_group_ret['values'][0]['table_name'];

@@ -7,7 +7,7 @@ class CRM_Gotowebinar_Utils {
    *
    * @return validToken
    */
-  public function refreshAccessToken(){
+  public static function refreshAccessToken(){
     // FIX ME : currently not refreshing tokens automatically - if the the above response returns 'InvalidToken' error, setting validToken flag as FALSE and displaying authentication fields again.
     $validToken = FALSE;
     $refreshToken = CRM_Gotowebinar_Utils::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
@@ -41,7 +41,7 @@ class CRM_Gotowebinar_Utils {
    *
    * @return TRUE(updated) / FALSE(not updated)
    */
-  public function storeAccessToken($clientInfo){
+  public static function storeAccessToken($clientInfo){
     //Update the values iff all the keys exist in the array
     if(array_key_exists('access_token',$clientInfo) && array_key_exists('organizer_key',$clientInfo) && array_key_exists('refresh_token',$clientInfo)){
       CRM_Gotowebinar_Utils::setItem($clientInfo['access_token'],
@@ -67,7 +67,7 @@ class CRM_Gotowebinar_Utils {
    *
    * @return response/result
    */
-  static function apiCall(
+  public static function apiCall(
     $url = NULL,
     $headers = NULL,
     $postFields = NULL
@@ -101,7 +101,7 @@ class CRM_Gotowebinar_Utils {
   /**
    *Function to register a participant for a webinar event
    */
-  public function registerParticipant($webinar_key, $fields=NULL){
+  public static function registerParticipant($webinar_key, $fields=NULL){
     $accessToken = CRM_Gotowebinar_Utils::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
         'access_token');
     $organizerKey = CRM_Gotowebinar_Utils::getItem(CRM_Gotowebinar_Form_Setting::WEBINAR_SETTING_GROUP,
@@ -153,7 +153,7 @@ class CRM_Gotowebinar_Utils {
    *
    * @return boolean
    */
-  function isCiviCRMVersion47(){
+  public static function isCiviCRMVersion47(){
     return version_compare(CRM_Utils_System::version(), '4.7', '>');
   }
 
